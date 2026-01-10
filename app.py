@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy
 import pandas as pd
 import matplotlib.pyplot as plt
 import base64
@@ -10,6 +11,13 @@ from train import (
     getModel, getAccuracy, get_test_data, 
     get_predictions, get_feature_names, get_full_data
 )
+
+import streamlit as st
+import pandas as pd
+import joblib
+
+MODEL_FILE = "diabetes_model.joblib"
+model_pipeline = joblib.load(MODEL_FILE)
 
 # --- SET PAGE CONFIG ---
 # This must be the first Streamlit command.

@@ -41,67 +41,67 @@ if 'Outcome' in data.columns and not data.empty:
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
     
     # --- Check for Saved Model ---
-    if os.path.exists(MODEL_FILE):
-        print(f"Loading saved model from '{MODEL_FILE}'...")
-        model_pipeline = joblib.load(MODEL_FILE)
-        print("Model loaded successfully.")
+    #if os.path.exists(MODEL_FILE):
+     #   print(f"Loading saved model from '{MODEL_FILE}'...")
+      #  model_pipeline = joblib.load(MODEL_FILE)
+       # print("Model loaded successfully.")
     
-    else:
-        print(f"No saved model found. Training a new model (this may take a few minutes)...")
-        # --- Create a preprocessing and modeling pipeline ---
-        
-        # We use 'model' as the name for the classifier step
-        model_pipeline = Pipeline([
-            ('imputer', SimpleImputer(strategy='median')),
-            ('scaler', StandardScaler()),
-            ('model', GradientBoostingClassifier(random_state=42)) # Base model
-        ])
-        
-        # --- Hyperparameter Tuning with GridSearchCV ---
-        param_grid = {
-            'model__n_estimators': [100, 200, 300],
-            'model__learning_rate': [0.01, 0.05, 0.1],
-            'model__max_depth': [3, 5, 7],
-            'model__subsample': [0.8, 1.0]
-        }
-        
-        # Set up the Grid Search
-        grid_search = GridSearchCV(
-            estimator=model_pipeline, 
-            param_grid=param_grid, 
-            cv=5, 
-            scoring='accuracy', 
-            n_jobs=-1
-        )
-        
-        # Train the grid search
-        print("Starting hyperparameter tuning...")
-        grid_search.fit(X_train, y_train)
-        
-        # Get the best model from the search
-        model_pipeline = grid_search.best_estimator_
-        
-        print("Tuning finished.")
-        print(f"Best parameters found: {grid_search.best_params_}")
-        
-        # --- Save the Model ---
-        joblib.dump(model_pipeline, MODEL_FILE)
-        print(f"Model saved to '{MODEL_FILE}'")
-
-
-    # --- Model Performance (runs every time with the loaded or trained model) ---
-    y_pred = model_pipeline.predict(X_test)
-    y_pred_proba = model_pipeline.predict_proba(X_test)[:, 1] # Probabilities for the positive class
-    accuracy = accuracy_score(y_test, y_pred)
+    #else:
+    print(f"No saved model found. Training a new model (this may take a few minutes)...")
+    # --- Create a preprocessing and modeling pipeline ---
     
-    print(f"New Model Accuracy: {accuracy:.4f}")
+    # We use 'model' as the name for the classifier step
+    model_pipeline = Pipeline([
+        ('imputer', SimpleImputer(strategy='median')),
+        ('scaler', StandardScaler()),
+        ('model', GradientBoostingClassifier(random_state=42)) # Base model
+    ])
+    
+    # --- Hyperparameter Tuning with GridSearchCV ---
+    param_grid = {
+        'model__n_estimators': [100, 200, 300],
+        'model__learning_rate': [0.01, 0.05, 0.1],
+        'model__max_depth': [3, 5, 7],
+        'model__subsample': [0.8, 1.0]
+    }
+    
+    # Set up the Grid Search
+    grid_search = GridSearchCV(
+        estimator=model_pipeline, 
+        param_grid=param_grid, 
+        cv=5, 
+        scoring='accuracy', 
+        n_jobs=-1
+    )
+    
+    # Train the grid search
+    print("Starting hyperparameter tuning...")
+    grid_search.fit(X_train, y_train)
+    
+    # Get the best model from the search
+    model_pipeline = grid_search.best_estimator_
+    
+    print("Tuning finished.")
+    print(f"Best parameters found: {grid_search.best_params_}")
+    
+    # --- Save the Model ---
+    joblib.dump(model_pipeline, MODEL_FILE)
+    print(f"Model saved to '{MODEL_FILE}'")
 
-else:
-    # Handle case where dummy data was created
-    model_pipeline = None
-    accuracy = 0
-    X_test, y_test, y_pred, y_pred_proba = (None, None, None, None)
-    feature_names = []
+
+# --- Model Performance (runs every time with the loaded or trained model) ---
+y_pred = model_pipeline.predict(X_test)
+y_pred_proba = model_pipeline.predict_proba(X_test)[:, 1] # Probabilities for the positive class
+accuracy = accuracy_score(y_test, y_pred)
+
+print(f"New Model Accuracy: {accuracy:.4f}")
+
+#else:
+# Handle case where dummy data was created
+model_pipeline = None
+accuracy = 0
+X_test, y_test, y_pred, y_pred_proba = (None, None, None, None)
+feature_names = []
 
 
 def getModel():
