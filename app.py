@@ -255,7 +255,6 @@ theme_choice = st.sidebar.radio(
     "Select Theme",
     ["Custom Background", "Default Dark"],
     index=0,  # Default to Custom Background
-    key="theme_choice"  # Bind directly to session state
 )
 show_charts = st.sidebar.checkbox("Show Data Exploration", value=True)
 
