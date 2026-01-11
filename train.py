@@ -10,19 +10,29 @@ import joblib  # For saving/loading the model
 import os      # For checking if the model file exists
 
 # --- Configuration ---
-DATA_FILE = "diabetes.csv"
+DATA_FILE = os.path.join(os.path.dirname(__file__), "diabetes.csv")
 MODEL_FILE = "diabetes_model.joblib"
 
 
 # Load the dataset
 try:
-    data = pd.read_csv(DATA_FILE)
+    df = pd.read_csv(DATA_FILE)
 except FileNotFoundError:
-    print(f"Error: '{DATA_FILE}' not found. Please run 'generate_synthetic_data.py' first.")
-    data = pd.DataFrame(columns=[
-        'Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 
-        'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age', 'Outcome'
-    ])
+    print(f"Warning: '{DATA_FILE}' not found. Generating synthetic data instead.")
+    import numpy as np
+    np.random.seed(42)
+    df = pd.DataFrame({
+        "Pregnancies": np.random.randint(0, 10, 768),
+        "Glucose": np.random.randint(80, 200, 768),
+        "BloodPressure": np.random.randint(60, 120, 768),
+        "SkinThickness": np.random.randint(10, 50, 768),
+        "Insulin": np.random.randint(15, 276, 768),
+        "BMI": np.random.uniform(18, 50, 768),
+        "DiabetesPedigreeFunction": np.random.uniform(0.1, 2.5, 768),
+        "Age": np.random.randint(21, 81, 768),
+        "Outcome": np.random.randint(0, 2, 768)
+    })
+
 
 # Handle problematic zero values by replacing them with NaN
 if 'Outcome' in data.columns:
