@@ -16,12 +16,12 @@ MODEL_FILE = "diabetes_model.joblib"
 
 # Load the dataset
 try:
-    df = pd.read_csv(DATA_FILE)
+    data = pd.read_csv(DATA_FILE)
 except FileNotFoundError:
     print(f"Warning: '{DATA_FILE}' not found. Generating synthetic data instead.")
     import numpy as np
     np.random.seed(42)
-    df = pd.DataFrame({
+    data = pd.DataFrame({
         "Pregnancies": np.random.randint(0, 10, 768),
         "Glucose": np.random.randint(80, 200, 768),
         "BloodPressure": np.random.randint(60, 120, 768),
