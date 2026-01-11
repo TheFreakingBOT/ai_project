@@ -251,6 +251,36 @@ if 'prediction_proba' not in st.session_state:
     st.session_state.prediction_proba = 0.0
 
 # --- Load Model and Data ---
+
+def getModel():
+    return joblib.load("diabetes_model.joblib")
+
+def get_test_data():
+    df = pd.read_csv("diabetes.csv")  # or synthetic fallback
+    X = df.drop("Outcome", axis=1)
+    y = df["Outcome"]
+    _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    return X_test, y_test
+
+def get_predictions():
+    model = getModel()
+    X_test, _ = get_test_data()
+    y_pred = model.predict(X_test)
+    y_pred_proba = model.predict_proba(X_test)
+    return y_pred, y_pred_proba
+
+def getAccuracy():
+    _, y_test = get_test_data()
+    y_pred, _ = get_predictions()
+    return accuracy_score(y_test, y_pred)
+
+def get_feature_names():
+    df = pd.read_csv("diabetes.csv")
+    return list(df.drop("Outcome", axis=1).columns)
+
+def get_full_data():
+    return pd.read_csv("diabetes.csv")
+
 model = getModel()
 accuracy = getAccuracy()
 X_test, y_test = get_test_data()
