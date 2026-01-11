@@ -1,139 +1,52 @@
+import os
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import accuracy_score
-import joblib  # For saving/loading the model
-import os      # For checking if the model file exists
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+import joblib
 
-# --- Configuration ---
-DATA_FILE = os.path.join(os.path.dirname(__file__), "diabetes.csv")
-MODEL_FILE = "diabetes_model.joblib"
+# Path to dataset
+DATA_PATH = os.path.join(os.path.dirname(__file__), "diabetes.csv")
 
+def load_data():
+    if os.path.exists(DATA_PATH):
+        # Load real dataset
+        df = pd.read_csv(DATA_PATH)
+        print("Loaded real dataset: diabetes.csv")
+    else:
+        # Generate synthetic fallback dataset
+        print("diabetes.csv not found. Using synthetic data...")
+        np.random.seed(42)
+        X = np.random.rand(100, 8)  # 8 features
+        y = np.random.randint(0, 2, 100)  # binary target
+        df = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(8)])
+        df["Outcome"] = y
+    return df
 
-# Load the dataset
-try:
-    data = pd.read_csv(DATA_FILE)
-except FileNotFoundError:
-    print(f"Warning: '{DATA_FILE}' not found. Generating synthetic data instead.")
-    import numpy as np
-    np.random.seed(42)
-    data = pd.DataFrame({
-        "Pregnancies": np.random.randint(0, 10, 768),
-        "Glucose": np.random.randint(80, 200, 768),
-        "BloodPressure": np.random.randint(60, 120, 768),
-        "SkinThickness": np.random.randint(10, 50, 768),
-        "Insulin": np.random.randint(15, 276, 768),
-        "BMI": np.random.uniform(18, 50, 768),
-        "DiabetesPedigreeFunction": np.random.uniform(0.1, 2.5, 768),
-        "Age": np.random.randint(21, 81, 768),
-        "Outcome": np.random.randint(0, 2, 768)
-    })
+def train_model():
+    df = load_data()
+    X = df.drop("Outcome", axis=1)
+    y = df["Outcome"]
 
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Handle problematic zero values by replacing them with NaN
-if 'Outcome' in data.columns:
-    print("Original data shape:", data.shape)
-    cols_with_zeros = ['Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI']
-    data[cols_with_zeros] = data[cols_with_zeros].replace(0, np.nan)
-    print("Data shape after replacing 0s with NaN:", data.shape)
+    model = LogisticRegression(max_iter=200)
+    model.fit(X_train, y_train)
 
-    # Split into features (X) and target (y)
-if 'Outcome' in data.columns and not data.empty:
-    X = data.drop("Outcome", axis=1)
-    y = data["Outcome"]
-    feature_names = X.columns.tolist()
+    # Save model
+    joblib.dump(model, "diabetes_model.joblib")
+    print("Model saved as diabetes_model.joblib")
 
-    # Split into training/testing, 70% training, 30% testing
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
-    
-    # --- Check for Saved Model ---
-    #if os.path.exists(MODEL_FILE):
-     #   print(f"Loading saved model from '{MODEL_FILE}'...")
-      #  model_pipeline = joblib.load(MODEL_FILE)
-       # print("Model loaded successfully.")
-    
-    #else:
-    print(f"No saved model found. Training a new model (this may take a few minutes)...")
-    # --- Create a preprocessing and modeling pipeline ---
-    
-    # We use 'model' as the name for the classifier step
-    model_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='median')),
-        ('scaler', StandardScaler()),
-        ('model', GradientBoostingClassifier(random_state=42)) # Base model
-    ])
-    
-    # --- Hyperparameter Tuning with GridSearchCV ---
-    param_grid = {
-        'model__n_estimators': [100, 200, 300],
-        'model__learning_rate': [0.01, 0.05, 0.1],
-        'model__max_depth': [3, 5, 7],
-        'model__subsample': [0.8, 1.0]
-    }
-    
-    # Set up the Grid Search
-    grid_search = GridSearchCV(
-        estimator=model_pipeline, 
-        param_grid=param_grid, 
-        cv=5, 
-        scoring='accuracy', 
-        n_jobs=-1
-    )
-    
-    # Train the grid search
-    print("Starting hyperparameter tuning...")
-    grid_search.fit(X_train, y_train)
-    
-    # Get the best model from the search
-    model_pipeline = grid_search.best_estimator_
-    
-    print("Tuning finished.")
-    print(f"Best parameters found: {grid_search.best_params_}")
-    
-    # --- Save the Model ---
-    joblib.dump(model_pipeline, MODEL_FILE)
-    print(f"Model saved to '{MODEL_FILE}'")
+# In train.py, after saving the model
+if os.path.exists(DATA_PATH):
+    source = "real dataset (diabetes.csv)"
+else:
+    source = "synthetic fallback data"
 
+with open("model_source.txt", "w") as f:
+    f.write(source)
 
-# --- Model Performance (runs every time with the loaded or trained model) ---
-y_pred = model_pipeline.predict(X_test)
-y_pred_proba = model_pipeline.predict_proba(X_test)[:, 1] # Probabilities for the positive class
-accuracy = accuracy_score(y_test, y_pred)
+print(f"Model trained on {source}")
 
-print(f"New Model Accuracy: {accuracy:.4f}")
-
-#else:
-# Handle case where dummy data was created
-model_pipeline = None
-accuracy = 0
-X_test, y_test, y_pred, y_pred_proba = (None, None, None, None)
-feature_names = []
-
-
-def getModel():
-    """Returns the trained model pipeline."""
-    return model_pipeline
-
-def getAccuracy():
-    """Returns the accuracy score on the test set."""
-    return accuracy
-
-def get_test_data():
-    """Returns the test features (X) and test target (y)."""
-    return X_test, y_test
-
-def get_predictions():
-    """Returns the model's predictions (classes) and probabilities on the test set."""
-    return y_pred, y_pred_proba
-
-def get_feature_names():
-    """Returns the list of feature names."""
-    return feature_names
-
-def get_full_data():
-    """Returns the complete original dataset."""
-    return data
+if __name__ == "__main__":
+    train_model()
