@@ -254,7 +254,7 @@ st.sidebar.header("App Options")
 theme_choice = st.sidebar.radio(
     "Select Theme",
     ["Custom Background", "Default Dark"],
-    index=0,  # Default to Custom Background
+    index=0 # Default to Custom Background
 )
 show_charts = st.sidebar.checkbox("Show Data Exploration", value=True)
 
