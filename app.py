@@ -16,6 +16,10 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+# Initialize session state for theme_choice
+if "theme_choice" not in st.session_state:
+    st.session_state["theme_choice"] = "Custom Background"
+
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "diabetes_model.joblib")
 
 try:
@@ -250,7 +254,8 @@ st.sidebar.header("App Options")
 theme_choice = st.sidebar.radio(
     "Select Theme",
     ["Custom Background", "Default Dark"],
-    index=0  # Default to Custom Background
+    index=0,  # Default to Custom Background
+    key="theme_choice"  # Bind directly to session state
 )
 show_charts = st.sidebar.checkbox("Show Data Exploration", value=True)
 
