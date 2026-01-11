@@ -7,14 +7,16 @@ import os
 import datetime
 # No FPDF import needed
 from sklearn.metrics import ConfusionMatrixDisplay, roc_curve, auc
-from train import (
-    getModel, getAccuracy, get_test_data, 
-    get_predictions, get_feature_names, get_full_data
-)
+#from train import (
+ #   getModel, getAccuracy, get_test_data, 
+  #  get_predictions, get_feature_names, get_full_data
+#)
 
 import streamlit as st
 import pandas as pd
 import joblib
+from train import train_model 
+from train import load_data
 
 # Initialize session state for theme_choice
 if "theme_choice" not in st.session_state:
