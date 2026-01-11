@@ -21,15 +21,23 @@ if "theme_choice" not in st.session_state:
     st.session_state["theme_choice"] = "Custom Background"
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "diabetes_model.joblib")
+SOURCE_PATH = os.path.join(os.path.dirname(__file__), "model_source.txt")
 
 try:
     model = joblib.load(MODEL_PATH)
+    if os.path.exists(SOURCE_PATH):
+        with open(SOURCE_PATH, "r") as f:
+            source_info = f.read().strip()
+        st.success(f"✅ Model loaded (trained on {source_info})")
+    else:
+        st.warning("⚠️ Model loaded, but source info not found.")
 except FileNotFoundError:
-    st.error("Model file not found. Please run train.py to generate 'diabetes_model.joblib'.")
+    st.error("Model file not found. Please run train.py to generate it.")
     st.stop()
 except Exception as e:
     st.error(f"Failed to load model: {e}")
     st.stop()
+
 
 
 MODEL_FILE = "diabetes_model.joblib"
