@@ -16,6 +16,18 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "diabetes_model.joblib")
+
+try:
+    model = joblib.load(MODEL_PATH)
+except FileNotFoundError:
+    st.error("Model file not found. Please run train.py to generate 'diabetes_model.joblib'.")
+    st.stop()
+except Exception as e:
+    st.error(f"Failed to load model: {e}")
+    st.stop()
+
+
 MODEL_FILE = "diabetes_model.joblib"
 model_pipeline = joblib.load(MODEL_FILE)
 
